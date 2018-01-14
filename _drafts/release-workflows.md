@@ -33,7 +33,7 @@ Support the following type of branches:
 | Pre-release version | version that doesn't follow the regular `semver` increment pattern. For example any increment of `2.0.0-beta.1` is `2.0.0-beta.2`, then `2.0.0-beta.2` etc...                      |
 | Version             | version following the `semver` rules. For example, a `minor` increment of `1.0.0` is `1.1.0`.                                                                                      |
 | Module              | A software meant to be used as a dependency of other software. It's not meant to be used by final users.                                                                           |
-| Application         | A software meant to be used by final users. No other software Dependents on it.                                                                                                    |
+| Application         | A software meant to be used by final users. No other software depends on it.                                                                                                    |
 | Module version      | The version of a module which is meant for machine and not for humans. For example a `major` release indicate a breaking change but doesn't cary any marketing or emotional value. |
 | Application version | The version of an application which is meant for humans. For example a `major` release carry has a marketing meaning.                                                              |
 
