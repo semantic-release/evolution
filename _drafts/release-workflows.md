@@ -272,7 +272,7 @@ Each branch is either a `String` or an `Object` with the following properties:
 |--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `branch`     | **Require** Git branch name                                                                                                                                             |
 | `range`      | Accepted version range for to release from this branch. If defined the branch will be considered a LTS branch.                                                          |
-| `channel`    | Channel on which to release. Ignored for release targets that doesn't support channels.                                                                                 |
+| `channel`    | Channel on which to release. Ignored for release targets that don't support channels.                                                                                 |
 | `prerelease` | Version of the pre-release done from this branch. Must be formatted `<version>-<tag>`. The version is required, the `tag` is optional. Examples: `4.0.0-beta`, `4.0.0`. |
 
 **The order in which the branches are defines is meaningful, and it is used to determine the branch type and which release can be done from each branch.**
