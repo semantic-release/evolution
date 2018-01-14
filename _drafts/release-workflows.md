@@ -117,10 +117,12 @@ Channel: `latest`, `next`
 
 ```json
 "release": {
-  "branches": ["master", {
-		"branch": "next",
-		"type": "major"
-		}]
+  "branches": [
+    "master", {
+      "branch": "next",
+      "type": "major"
+    }
+  ]
 }
 ```
 
