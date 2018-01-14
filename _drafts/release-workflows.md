@@ -161,11 +161,14 @@ With specific channel names:
 
 ```json
 "release": {
-  "branches": ["master", {
-    "branch": "next",
-    "channel": "experimental",
-		"type": "major"
-  }]
+  "branches": [
+    "master", 
+    {
+      "branch": "next",
+      "channel": "experimental",
+      "type": "major"
+    }
+  ]
 }
 ```
 
