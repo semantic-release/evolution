@@ -189,7 +189,7 @@ Channel: `latest` if supported by the release target
 | **push** to `1.x.x` or `2.x.x` branches             | Release on default channel (if supported, otherwise no channel) if in range, report an error and error otherwise |
 | **merge** any branch to `1.x.x` or `2.x.x` branches | Release on default channel (if supported, otherwise no channel) if in range, report an error and error otherwise |
 
-Note: By default lts releases are published on the default channel as they are limited to a range of versions inferior to the versions released from `master`. Dependents will get only the expected releases by specifying a range dependency (for example `^2.0.0`).
+Note: By default lts releases are published on the default channel as they are limited to a range of versions lower than the versions released from `master`. Dependents will get only the expected releases by specifying a range dependency (for example `^2.0.0`).
 If a `channel` is specified, then the release will be made on this channel.
 
 ##### LTS branches configuration
