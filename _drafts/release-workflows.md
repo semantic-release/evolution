@@ -29,14 +29,11 @@ Support the following type of branches:
 | Future branches     | Permanent Git branch that contains the unstable code (made available only to early adopters). Usually named `next`.                                                                |
 | Channel             | Distribution channels used to limit the accessibility of a release to a subset of users. For example `dist-tags` in `npm`.                                                         |
 | Default channel     | Distribution channel to make stable version available to every users. Usually named `latest`.                                                                                      |
-| Future channels     | Distribution channels to make unstable version available to early adopters. Usually named `next`.                                                                    |
+| Future channels     | Distribution channels to make unstable version available to early adopters. Usually named `next`.                                                                                  |
 | Pre-release version | version that doesn't follow the regular `semver` increment pattern. For example any increment of `2.0.0-beta.1` is `2.0.0-beta.2`, then `2.0.0-beta.2` etc...                      |
 | Version             | version following the `semver` rules. For example, a `minor` increment of `1.0.0` is `1.1.0`.                                                                                      |
 | Module              | A software meant to be used as a dependency of other software. It's not meant to be used by final users.                                                                           |
-| Application         | A software meant to be used by final users. No other software depends on it.                                                                                                    |
-| Module version      | The version of a module which is meant for machines, not humans. For example a `major` release indicates a breaking change but doesn't cary any marketing or emotional value. |
-| Application version | The version of an application which is meant for humans. For example a `major` release has a marketing meaning.                                                              |
-
+| Application         | A software meant to be used by final users. No other software depends on it.                                                                                                       |                                                         |
 
 ### Branch types
 
@@ -162,7 +159,7 @@ With specific channel names:
 ```json
 "release": {
   "branches": [
-    "master", 
+    "master",
     {
       "branch": "next",
       "channel": "experimental",
