@@ -57,8 +57,10 @@ Channel: `latest` if supported by the release target
 ##### Single release branch configuration
 
 ```json
-"release": {
-  "branches": ["master"]
+{
+  "release": {
+    "branches": ["master"]
+  }
 }
 ```
 
@@ -85,8 +87,10 @@ Channel: `latest` if supported by the release target
 ##### Non release branch configuration
 
 ```json
-"release": {
-  "branches": ["master"]
+{
+  "release": {
+    "branches": ["master"]
+  }
 }
 ```
 
@@ -104,8 +108,8 @@ Channel: `latest`, `next`
 
 | Action                                                | Result                                                                                                                                                                                                                                                                                                    |
 |-------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **push** to `master`                                  | Release on `latest` channel if the commit trigger a release with a version that doesn't satisfies the `type` defines for `next` branch, report an error otherwise                                                                                                                                         |
-| **merge** feature branch to `master`                  | Release on `latest` channel if the commit trigger a release with a version that doesn't satisfies the `type` defines for `next` branch, report an error otherwise                                                                                                                                         |
+| **push** to `master`                                  | Release on `latest` channel if the commit trigger an allowed release type, report an error otherwise                                                                                                                                                                                                      |
+| **merge** feature branch to `master`                  | Release on `latest` channel if the commit trigger an allowed release type, report an error otherwise                                                                                                                                                                                                      |
 | **push** to `next`                                    | Release on `next` channel                                                                                                                                                                                                                                                                                 |
 | **merge** any branch to `next`                        | Release on `next` channel                                                                                                                                                                                                                                                                                 |
 | **merge** some commits from `next` branch to `master` | Get the last release for commits on branch `master` (including the one that come from `next`), analyze commits, increase the version; If the commit associated with the last release found is also present on `next`, make the version available on the `latest` channel, otherwise do a regular release. |
@@ -113,59 +117,46 @@ Channel: `latest`, `next`
 ##### Future branches configuration
 
 ```json
-"release": {
-  "branches": [
-    "master", {
-      "branch": "next",
-      "type": "major"
-    }
-  ]
+{
+  "release": {
+    "branches": ["master", "next"]
+  }
 }
 ```
 
-The `type` is required for future branches and indicate that its reserved for a certain type of release (`minor` or `major`).
-That defines how much ahead the future branch must be versus the pervious branch in the list. If configured with `major`, the `next` branch must always one `major` release ahead of `master`.
+Internally **semantic-release** will determines the type of commit that can be done on each branch, based on the number of future branches defined:
+- `"branches": ["master"]` => Any type of commit can be pushed to `master`
+- `"branches": ["master", "next"]` => `master` will accept `fix` and `feat` commits; `next` will accept any type of commits.
+- `"branches": ["master", "next", "next-major"]` => `master` will accept `fix`; `next` will accept `fix` and `feat` commits; `next-major` will accept any type of commits.
 
-Example 1:
-- if the last release on `latest` is `2.1.0` and `next` is configured with `"type" : "major"`
-- and the last release on `next` is also `2.1.0`
-- then any releases are allowed on `latest`
-- And only `major` releases are allowed on `next`
+Those rules are meant to prevent inconsistent state in releases in which the same releases line is "forked".
 
-Example 2:
-- if the last release on `latest` is `2.1.0` and `next` is configured with `"type" : "major"`
-- and the last release on `next` is `2.5.0`
-- then `patch` releases are allowed on `latest`, but `minor` and `major` are forbidden
-- And any releases are allowed on `next`
+For example with the config `"branches": ["master", "next"]` and:
+- last release from `master` is `1.1.0`
+- last release from `next` is `2.0.0`
 
-Example 3:
-- if the last release on `latest` is `2.1.0` and `next` is configured with `"type" : "major"`
-- and the last release on `next` is `3.0.0`
-- then `patch` and `minor` releases are allowed on `latest`, but `major` are forbidden
-- And any releases are allowed on `next`
+Committing a breaking change to `master` would trigger the release of `2.0.0` that would fail as the release already exists.
 
-Example 4:
-- if the last release on `latest` is `3.0.0` and `next` is configured with `"type" : "major"`
-- and the last release on `next` is `2.5.0`
-- And any releases are allowed on `latest`
-- No releases are allowed on `next` (it's considered stalled) until `master` is merged into `next`. Once it's done the situation becomes the one described in Example 1
+In addition when the `master` and `next` have the same commit head (after a merging `next` into `master` for example), the first commit done on `next` must be a breaking change.
+Otherwise that would result in a "fork" situation.
 
-That enforces consistence across versions: **if a `x.y.z` version exists on a given channel, all superior versions on that channel must includes all the commits of `x.y.z`**
+For example with the config `"branches": ["master", "next"]` and:
+- last release from `master` is `2.0.0`
+- last release from `next` is `2.0.0`
 
-If not specified the `type` is `major`.
+A `feat` commit on `master` will release version `2.1.0`.
+Committing a `feat` commit on `next` would trigger the release of `2.1.0` that would fail as the release already exists.
 
 With specific channel names:
 
 ```json
-"release": {
-  "branches": [
-    "master",
-    {
-      "branch": "next",
-      "channel": "experimental",
-      "type": "major"
-    }
-  ]
+{
+  "release": {
+    "branches": [
+      "master",
+      {"branch": "next", "channel": "preview"}
+    ]
+  }
 }
 ```
 
@@ -175,28 +166,25 @@ Workflow to release legacy versions.
 
 Ideal for modules maintaining legacy versions and doing bug fixes and features only releases.
 
-Branch: `1.x.x`, `2.x.x`, `master` (any number of lts branches are supported)
+Branch: `1.x`, `2.x`, `master` (any number of lts branches are supported)
 
-Channel: `latest` if supported by the release target
+Channel: `1.x`, `2.x`, `latest` if supported by the release target
 
 ##### LTS branches workflow
 
-| Action                                              | Result                                                                                                           |
-|-----------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| **push** to `master`                                | Release on default channel (if supported, otherwise no channel)                                                  |
-| **merge** feature branch to `master`                | Release on default channel (if supported, otherwise no channel)                                                  |
-| **push** to `next`                                  | -                                                                                                                |
-| **push** to `1.x.x` or `2.x.x` branches             | Release on default channel (if supported, otherwise no channel) if in range, report an error and error otherwise |
-| **merge** any branch to `1.x.x` or `2.x.x` branches | Release on default channel (if supported, otherwise no channel) if in range, report an error and error otherwise |
-
-Note: By default lts releases are published on the default channel as they are limited to a range of versions lower than the versions released from `master`. Dependents will get only the expected releases by specifying a range dependency (for example `^2.0.0`).
-If a `channel` is specified, then the release will be made on this channel.
+| Action                                          | Result                                                                                                                  |
+|-------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| **push** to `master`                            | Release on default channel (if supported, otherwise no channel)                                                         |
+| **merge** feature branch to `master`            | Release on default channel (if supported, otherwise no channel)                                                         |
+| **push** to `1.x` or `2.x` branches             | Release on `1.x` or `2.x` channel (if supported, otherwise no channel) if in range, report an error and error otherwise |
+| **merge** any branch to `1.x` or `2.x` branches | Release on `1.x` or `2.x` channel (if supported, otherwise no channel) if in range, report an error and error otherwise |
 
 ##### LTS branches configuration
 
 ```json
-"release": {
-  "branches": ["1.x.x", "2.x.x", "master"]
+{
+  "release": {
+    "branches": ["1.x", "2.x", "master"]
   }
 }
 ```
@@ -204,16 +192,14 @@ If a `channel` is specified, then the release will be made on this channel.
 With specific channel names:
 
 ```json
-"release": {
-  "branches": [{
-    "branch": "v1",
-    "range": "1.x.x",
-    "channel": "v1"
-  }, {
-    "branch": "v2",
-    "range": "2.x.x",
-    "channel": "v2"
-  }, "master"]
+{
+  "release": {
+    "branches": [
+      {"branch": "v1", "range": "1.x", "channel": "v1"},
+      {"branch": "v2", "range": "2.x", "channel": "v2"},
+      "master"
+    ]
+  }
 }
 ```
 
@@ -222,40 +208,32 @@ With specific channel names:
 Workflow to distribute releases without incrementing the semantic version during the development of new a application version.  
 Ideal for applications distributing unstable/alpha/preview releases.
 
-Branch: `master`, `next-beta`, `next-alpha`
+Branch: `master`, `beta`, `alpha`
 
 Channel: `latest` if supported by the release target
 
 ##### Pre-releases workflow
 
-| Action                                                         | Result                                                                                                                                        |
-|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
-| **push** to `master`                                           | Release on default channel (if supported, otherwise no channel)                                                                               |
-| **merge** `4.0.0-beta`, `5.0.0-beta` or any branch to `master` | Release on default channel (if supported, otherwise no channel)                                                                               |
-| **push** to `4.0.0-beta`                                       | Release a prerelease version (`4.0.0-beta`, then `4.0.0-beta.1`, then `4.0.0-beta.2`) on default channel (if supported, otherwise no channel) |
-| **merge** any branch to `4.0.0-beta`                           | Release a prerelease version (`4.0.0-beta`, then `4.0.0-beta.1`, then `4.0.0-beta.2`) on default channel (if supported, otherwise no channel) |
-| **push** to `5.0.0-beta`                                       | Release a prerelease version (`5.0.0-beta`, then `5.0.0-beta.1`, then `5.0.0-beta.2`) on default channel (if supported, otherwise no channel) |
-| **merge** any branch to `5.0.0-beta`                           | Release a prerelease version (`5.0.0-beta`, then `5.0.0-beta.1`, then `5.0.0-beta.2`) on default channel (if supported, otherwise no channel) |
+| Action                                              | Result                                                                                                                                                                                                                                                                                                                                                                                |
+|-----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **push** to `master`                                | Release on default channel (if supported, otherwise no channel)                                                                                                                                                                                                                                                                                                                       |
+| **merge** `beta`, `alpha` or any branch to `master` | Release on default channel (if supported, otherwise no channel)                                                                                                                                                                                                                                                                                                                       |
+| **push** to `beta`                                  | Get the last release for commits on branch `beta`; if the last release is also present on a lower branch (it would be the first release on `beta`), increment the version based on new commits and make a prelease on `beta` channel; if the last release is a pre-release increment the prerelease version (`4.0.0-beta.1`, then `4.0.0-beta.2`) and release on `beta` channel       |
+| **merge** any branch to `beta`                      | Get the last release for commits on branch `beta`; if the last release is also present on a lower branch (it would be the first release on `beta`), increment the version based on new commits and make a prelease on `beta` channel; if the last release is a pre-release increment the prerelease version (`4.0.0-beta.1`, then `4.0.0-beta.2`) and release on `beta` channel       |
+| **push** to `alpha`                                 | Get the last release for commits on branch `alpha`; if the last release is also present on a lower branch (it would be the first release on `alpha`), increment the version based on new commits and make a prelease on `alpha` channel; if the last release is a pre-release increment the prerelease version (`5.0.0-alpha.1`, then `5.0.0-alpha.2`) and release on `alpha` channel |
+| **merge** any branch to `alpha`                     | Get the last release for commits on branch `alpha`; if the last release is also present on a lower branch (it would be the first release on `alpha`), increment the version based on new commits and make a prelease on `alpha` channel; if the last release is a pre-release increment the prerelease version (`5.0.0-alpha.1`, then `5.0.0-alpha.2`) and release on `alpha` channel |
 
 ##### Pre-releases configuration
 
 ```json
-"release": {
-  "branches": ["master", "4.0.0-beta", "5.0.0-alpha"]
-}
-```
-
-With specific branch names:
-
-```json
-"release": {
-  "branches": ["master", {
-    "branch": "dev",
-    "prerelease": "4.0.0-alpha"
-  }, {
-    "branch": "experimental",
-    "prerelease": "5.0.0-beta"
-  }]
+{
+  "release": {
+    "branches": [
+      "master",
+      {"branch": "beta", "prerelease": true},
+      {"branch": "alpha", "prerelease": true},
+    ]
+  }
 }
 ```
 
@@ -277,46 +255,47 @@ Each branch is either a `String` or an `Object` with the following properties:
 ##### Branches naming convention
 
 In a branch is defined as a `String` `semantic-release` will automatically determine the type of branch as follow:
-- If the branch name is a valid semver range (`1.x.x`, `1.0.x`, `^1.0.0`) the branch will be considered a LTS branch, with its range based on the branch name, and release on the channel with the same name formatted `1.x.x` (`^1.0.0` => `1.x.x`)
+- If the branch name is a valid semver range (Only the format `1.x.x` or `1.x` are valid Git reference names) the branch will be considered a LTS branch, with its range based on the branch name, and release on the channel with the same name
 - The first branch in the `branches` `Array` after the LTS branches is considered the default branch (usually `master`).
 - Each branches in the `branches` `Array` after the default branch are considered future branches.
-- If a future branch is named `minor`, `major`, `breaking` or `feature` it's type will be determined accordingly
-- If the branch name is formatted like `<version>-<tag>` the branch will be considered a pre-release branch with `version` and `tag` based on the branch name.
 
 For example:
 ```json
-"release": {
-  "branches": ["1.x.x", "master", "next", "5.0.0-alpha"]
+{
+  "release": {
+    "branches": [
+      "1.x.x",
+      "master",
+      "next",
+      {"branch": "alpha", "prerelease": true}
+    ]
+  }
 }
 ```
-is equivalent of:
+is equivalent to:
 ```json
-"release": {
-  "branches": [{
-    "branch": "1.x.x",
-    "range": "1.x.x",
-    "channel": "latest"
-  }, {
-    "branch": "master",
-    "channel": "latest"
-  }, {
-    "branch": "next",
-    "channel": "next"
-  }, {
-    "branch": "5.0.0-alpha",
-    "prerelease": "5.0.0-beta"
-  }]
+{
+  "release": {
+    "branches": [
+      {"branch": "1.x.x", "range": "1.x.x", "channel": "latest"},
+      {"branch": "master", "channel": "latest"},
+      {"branch": "next", "channel": "next"},
+      {"branch": "alpha", "channel": "alpha", "preid": "alpha", "prerelease": true}
+    ]
+  }
 }
 ```
 
 ##### Configuration validation
 
 The `branches` configuration must follow these rules:
-- A branch cannot be named after a valid, non pre-release semver version (for example `1.0.0` or `v1.0.0` are invalid branch names).
+- All branch name must be valid [Git reference](https://git-scm.com/docs/git-check-ref-format)
+- A branch cannot be named after a valid semver version (for example `1.0.0` or `v1.0.0` are invalid branch names) or a name that match the `tagFormat`.
 - A default branch is required.
-- LTS branches range must not overlap. For example `["1.x.x", 1.5.x]` is invalid.
+- LTS branches range must not overlap among themselves and the default one. For example `["1.x.x", 1.5.x]` is invalid.
 - LTS branches must be defined before the default branch.
 - Futures branches must be defined after the default branch.
+- A maximum of 2 future branch can be defined (one for features and one for breaking change)
 - Default and future branches cannot define a `range`.
 
 ## Backward compatibility
@@ -328,4 +307,3 @@ Non backward compatible changes:
   - If release already exists, make it available on `nextRelease.channel` (in case of github, remove the `prerelease` flag if the target channel is the default one)
   - For the `npm` plugin, always publish on the dist-tag passed in `nextRelease.channel` or `latest` if `nextRelease.channel` is not set
   - For the `github` plugin, set `prerelease` flag if the current branch is a future or prerelease
-- `getLastRelease` deprecation
