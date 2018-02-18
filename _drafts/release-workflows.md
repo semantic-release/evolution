@@ -269,7 +269,7 @@ Each branch is either a `String` or an `Object` with the following properties:
 |--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `branch`     | **Require** Git branch name                                                                                                                                             |
 | `range`      | Accepted version range for to release from this branch. If defined the branch will be considered a LTS branch.                                                          |
-| `channel`    | Channel on which to release. Ignored for release targets that don't support channels.                                                                                 |
+| `channel`    | Channel on which to release. Ignored for release targets that don't support channels.                                                                                   |
 | `prerelease` | Version of the pre-release done from this branch. Must be formatted `<version>-<tag>`. The version is required, the `tag` is optional. Examples: `4.0.0-beta`, `4.0.0`. |
 
 **The order in which the branches are defines is meaningful, and it is used to determine the branch type and which release can be done from each branch.**
@@ -318,60 +318,6 @@ The `branches` configuration must follow these rules:
 - LTS branches must be defined before the default branch.
 - Futures branches must be defined after the default branch.
 - Default and future branches cannot define a `range`.
-
-## Deprecate `getLastRelease` and move tag management to the core
-
-In order to determine the last version from which to calculate the new one, the `getLastRelease` need to identify the last version present on the current branch.
-
-For example:
-- The code corresponding to version `1.0.0` is present on `master`
-- The code corresponding to version `1.1.0`, `1.2.0` and `1.3.0` is present on the `next` branch
-- The user prepare a PR to `master` with the commits from `next` corresponding to version up to `1.2.0` and add a `fix` commit
-- The PR get merged
-- semantic-release runs on master and must:
-  - retrieve the last version present on `master` which is `1.2.0` (even though `1.2.0` was published only from `next`)
-  - then evaluate the commits between `1.2.0` and now
-  - determine there is a new `fix` commit
-  - increase the version to `1.2.1` and publish
-
-Similarly if the user PR contains the commits from `next` corresponding to version up to `1.2.0` without additional commits, semantic-release will:
-- retrieve the last version present on `master` which is `1.2.0` (even though `1.2.0` was published only from `next`)
-- then evaluate the commits between `1.2.0` and now
-- determine there is no new commit
-- still call the publish plugins in order to make `1.2.0` available on the channel associated with `master`
-
-This behavior will work by default with the `getLastRelease` of the git plugin, because when merging commits from `next` to `master` the tags will follow.
-So when semantic-release runs on master the git plugin will by default retrieve the last version present on the branch as it uses tags.
-
-This would be quite complex to implement for the npm plugin's `getLastRelease` though. We would need to:
-- retrieve the last release on the dist-tag corresponding to `master`
-- retrieve all the version released after that
-- for each version get the githead
-- check if the gitHead is on master
-- return the version and gitHead corresponding to the highest version present on `master`
-
-This is actually even more complex as GitHub allow to "Rebase and Merge" which rewrite the commit sha.
-That means we would have for each gitHead, find the corresponding commit tree sha.
-
-The only reliable and efficient way to obtain the last release would be to use git tags, which imply that each semantic-release creates a tag.
-
-**Proposal**
-- Deprecate the `getLastRelease` plugin
-- Move the git plugin `getLastRelease` logic in to the Core
-- Create the git tags from the Core as it's now mandatory to have a tag for each release
-
-That would make semantic-release only works with Git repo. But it is already the case anyway.
-
-It has the advantages of:
-- allowing semantic-release to not rely on plugins behavior for tag creation
-- Simplify the `publish` plugins has they would not have to deal with tag creation and handling the case where the tag already exists
-- Centralize the complexity of last release retrieval to the core, making it easier to create simple, focused plugins
-- As the authentication to the git repo will be handled and verified at the core level (via `GH_TOKEN` or `GIT_CREDENTIALS`), plugin can easily access the repo without having any extra complexity
-- Relying on tag to identify version make it easier to "fix problem" as tag can be created easily, while gitHead on npm can't be changed, and is somewhat unreliable due to npm/read-package-json#77 and the fact it's a non documented feature
-
-The inconvenient are:
-- tags are now mandatory, but I can't think of a situation in which we wouldn't want to create a tag.
-- IT wouldn't be possible to have a npm only config, that release on npm but doesn't create a tag in the repo, but I don't think it's something desirable anyway
 
 ## Backward compatibility
 
