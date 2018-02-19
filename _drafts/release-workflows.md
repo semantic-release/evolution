@@ -98,7 +98,7 @@ Channel: `latest` if supported by the release target
 
 Channel based workflow to release on different channels. Make future release available on `latest` channel when merging associated branches into `master` branch.
 
-Ideal for stable modules, distributing new features to a subset of users as soon as possible. This workflow allow to to get feedback from early adopters while limiting the risk of regression for other users.
+Ideal for stable modules, distributing new features to a subset of users as soon as possible. This workflow allows to get feedback from early adopters while limiting the risk of regression for other users.
 
 Branch: `master`, `next`
 
