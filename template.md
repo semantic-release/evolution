@@ -1,23 +1,32 @@
-# Feature name
+# Git Changelog Lib migration/fork proposal
 
-> A short description of what the feature is. Try to keep it to a single-paragraph "elevator pitch" so the reader understands what problem this proposal is addressing.
+Migrate [Git Changelog Lib](https://github.com/tomasbjerre/git-changelog-lib) to use same configuration, and features, as Semantic Release. To enable using same workflow with its [Gradle](https://github.com/tomasbjerre/git-changelog-gradle-plugin), [Maven](https://github.com/tomasbjerre/git-changelog-maven-plugin) and [Jenkins](https://github.com/jenkinsci/git-changelog-plugin) -plugins.
 
 ## Motivation
 
-> Describe the problems that this proposal seeks to address. If the problem is that some common pattern is currently hard to implement, show how one can currently get a similar effect and describe its drawbacks. If it's completely new functionality that cannot be emulated, motivate why this new functionality would help developers create better workflows. Include any links to Issues or Pull Requests where the need for this feature came up.
+I am doing similar work as you do. But I do it for Java projects and Jenkins. I think everyone, users and developers, will gain from us joining forces.
 
 ## Proposed solution
 
-> Describe your solution to the problem. Provide examples and describe how they work. Show how your solution is better than current workarounds.
+I'm considering rewriting my [Git Changelog Lib](https://github.com/tomasbjerre/git-changelog-lib) to be compatible with your configuration.
+
+I propose I work on a rewrite. When I'm ready, my repositories can be forked to the [semantic-release](https://github.com/semantic-release) organization.
 
 ## Detailed design
 
-> Describe the design of the solution in detail. The detail in this section should be sufficient for someone who is *not* one of the authors to be able to reasonably implement the feature.
+The library implementing core functionality: [Git Changelog Lib](https://github.com/tomasbjerre/git-changelog-lib)
+
+Plugins that are kept as small as possible, just adding the glue needed to ease usage on those platforms:
+
+- [Gradle plugin](https://github.com/tomasbjerre/git-changelog-gradle-plugin).
+- [Maven plugin](https://github.com/tomasbjerre/git-changelog-maven-plugin).
+- [Jenkins plugin](https://github.com/jenkinsci/git-changelog-plugin).
+- [command line](https://github.com/tomasbjerre/git-changelog-command-line).
 
 ## Backward compatibility
 
-> Describe how this change affects compatibility with existing community packages. Will they break? Will they produce different behavior? If "yes" to either of these, is it possible to support the old behavior alongside the new behavior? Can scripts be written in a way that they work before and after this change?
+No changes required on existing code in [semantic-release](https://github.com/semantic-release). I think I would like to keep existing features, and deprecate them, in the [Git Changelog Lib](https://github.com/tomasbjerre/git-changelog-lib).
 
 ## Alternatives considered
 
-> Describe alternative approaches to addressing the same problem, and why you chose this approach instead.
+Alternative might be for me to do this work, but not expecting anything to be forked to [semantic-release](https://github.com/semantic-release).
