@@ -25,7 +25,7 @@ Plugins that are kept as small as possible, just adding the glue needed to ease 
 
 ## Backward compatibility
 
-No changes required on existing code in [semantic-release](https://github.com/semantic-release). I think I would like to keep existing features, and deprecate them, in the [Git Changelog Lib](https://github.com/tomasbjerre/git-changelog-lib).
+No changes required on existing code in [semantic-release](https://github.com/semantic-release).
 
 ## Alternatives considered
 
